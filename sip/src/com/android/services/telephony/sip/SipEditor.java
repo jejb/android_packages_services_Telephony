@@ -112,7 +112,10 @@ public class SipEditor extends PreferenceActivity
         Port(R.string.port, R.string.default_port, R.string.default_port),
         Transport(R.string.transport, R.string.default_transport, NA),
         SendKeepAlive(R.string.send_keepalive, R.string.sip_system_decide, NA),
-        AuthUserName(R.string.auth_username, 0, R.string.optional_summary);
+        AuthUserName(R.string.auth_username, 0, R.string.optional_summary),
+        RegistrationTimeout(R.string.registration_timeout,
+                            R.string.default_registration_timeout,
+                            R.string.default_registration_timeout);
 
         final int text;
         final int initValue;
@@ -354,6 +357,9 @@ public class SipEditor extends PreferenceActivity
                         case Port:
                             pref.setText(getString(R.string.default_port));
                             break;
+                        case RegistrationTimeout:
+                            pref.setText(getString(R.string.default_registration_timeout));
+                            break;
                         default:
                             if (firstEmptyFieldTitle == null) {
                                 firstEmptyFieldTitle = pref.getTitle();
@@ -369,6 +375,18 @@ public class SipEditor extends PreferenceActivity
                     }
                     if ((port < 1000) || (port > 65534)) {
                         showAlert(getString(R.string.not_a_valid_port));
+                        return;
+                    }
+                } else if (key == PreferenceKey.RegistrationTimeout) {
+                    int timeout;
+                    try {
+                        timeout = Integer.parseInt(PreferenceKey.RegistrationTimeout.getValue());
+                    } catch (NumberFormatException e) {
+                        showAlert(getString(R.string.not_valid_registration_timeout));
+                        return;
+                    }
+		    if (timeout < 10 || timeout > 3600) {
+                        showAlert(getString(R.string.not_valid_registration_timeout));
                         return;
                     }
                 }
@@ -439,6 +457,7 @@ public class SipEditor extends PreferenceActivity
                 .setAutoRegistration(
                         mSipPreferences.isReceivingCallsEnabled())
                 .setAuthUserName(PreferenceKey.AuthUserName.getValue())
+                .setRegistrationTimeout(Integer.parseInt(PreferenceKey.RegistrationTimeout.getValue()))
                 .build();
     }
 
