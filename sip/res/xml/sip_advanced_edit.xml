@@ -70,5 +70,14 @@
             android:entryValues="@array/sip_send_keepalive_options"
             android:persistent="false"
             android:summary="@string/sip_system_decide"/>
+
+            <EditTextPreference
+            android:key="@string/registration_timeout"
+            android:title="@string/registration_timeout_title"
+            android:summary="@string/default_registration_timeout"
+            android:dialogTitle="@string/registration_timeout_title"
+            android:persistent="false"
+            android:inputType="number|numberDecimal"
+            android:singleLine="true"/>
     </PreferenceCategory>
 </PreferenceScreen>
