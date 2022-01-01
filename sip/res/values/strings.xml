@@ -104,6 +104,8 @@
     <string name="proxy_address_title">Outbound proxy address</string>
     <!-- Text of the sip server/proxy port number. [CHAR LIMIT=NONE] -->
     <string name="port_title">Port number</string>
+    <!-- Text of the sip registration timeout. [CHAR LIMIT=NONE] -->
+    <string name="registration_timeout_title">Registration timeout</string>
     <!-- Text of the transport type preference. [CHAR LIMIT=NONE] -->
     <string name="transport_title">Transport type</string>
     <!-- Text of the keepalive preference. [CHAR LIMIT=NONE] -->
@@ -128,6 +130,8 @@
 
     <!-- Default sip server/proxy port number. -->
     <string translatable="false" name="default_port">5060</string>
+    <!-- Default registration timeout. -->
+    <string translatable="false" name="default_registration_timeout">3600</string>
     <!-- Default sip server/proxy transport protocol. -->
     <string translatable="false" name="default_transport">UDP</string>
 
@@ -143,7 +147,8 @@
     <string name="empty_alert"><xliff:g id="input_field_name" example="Username, Password...">%s</xliff:g> is required and can\'t be left blank.</string>
     <!-- Showing that port number is out of range in an alert dialog. [CHAR LIMIT=NONE] -->
     <string name="not_a_valid_port">Port number should be within 1000 and 65534.</string>
-
+    <!-- Showing that registration timeout is out of range in an alert dialog. [CHAR LIMIT=NONE] -->
+    <string name="not_valid_registration_timeout">Registration timeout should be between 10 and 3600 seconds</string>
     <!-- Message of the alert dialog to notify user that there is no Internet connectivity. [CHAR LIMIT=NONE] -->
     <string name="no_internet_available">To place a SIP call, check your Internet connection first.</string>
     <!-- Message of the alert dialog to notify user that there is no Wi-Fi connectivity. [CHAR LIMIT=NONE] -->
@@ -167,6 +172,7 @@
     <string translatable="false" name="display_name">DisplayName</string>
     <string translatable="false" name="proxy_address">ProxyAddress</string>
     <string translatable="false" name="port">Port</string>
+    <string translatable="false" name="registration_timeout">RegistrationTimeout</string>
     <string translatable="false" name="transport">Protocol</string>
     <string translatable="false" name="send_keepalive">SendKeepAlive</string>
     <string translatable="false" name="advanced_settings_container">advanced settings container</string>
