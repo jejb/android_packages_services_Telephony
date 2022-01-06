@@ -88,6 +88,9 @@ public class NotificationMgr {
     private static final String MWI_SHOULD_CHECK_VVM_CONFIGURATION_KEY_PREFIX =
             "mwi_should_check_vvm_configuration_state_";
 
+    // Tag for SIP notifications that isn't a possible subscription id
+    private static final int SIP_TAG = -3141;
+
     // notification types
     static final int MMI_NOTIFICATION = 1;
     static final int NETWORK_SELECTION_NOTIFICATION = 2;
@@ -134,6 +137,7 @@ public class NotificationMgr {
 
     // used to track whether the message waiting indicator is visible, per subscription id.
     private ArrayMap<Integer, Boolean> mMwiVisible = new ArrayMap<Integer, Boolean>();
+    private ArrayMap<String, Integer> mMwiSipCount = new ArrayMap<String, Integer>();
 
     // those flags are used to track whether to show network selection notification or not.
     private SparseArray<Integer> mPreviousServiceState = new SparseArray<>();
@@ -256,6 +260,77 @@ public class NotificationMgr {
      */
     /* package */ void updateMwi(int subId, boolean visible) {
         updateMwi(subId, visible, false /* isRefresh */);
+    }
+
+    void notifySipMwi(PhoneAccountHandle phoneAccountHandle, int count,
+                      int total, String number) {
+        boolean isRefresh = true;
+        PhoneAccount phoneAccount = mTelecomManager
+            .getPhoneAccount(phoneAccountHandle);
+        String id = phoneAccount.getLabel().toString();
+        int oldcount = 0;
+        if (mMwiSipCount.containsKey(id))
+            oldcount = mMwiSipCount.get(id);
+
+        /*
+         * Only do visible notification if we're adding voicemails
+         * (count increases) otherwise silently adjust or kill.  If
+         * count hasn't changed, do nothing otherwise notification
+         * will return if user has dismissed it.
+         */
+        if (count > oldcount)
+            isRefresh = false;
+        else if (count == oldcount)
+            return;
+
+        mMwiSipCount.put(id, count);
+
+        if (count > 0) {
+            Intent intent = new Intent(Intent.ACTION_CALL,
+                                       Uri.fromParts(PhoneAccount.SCHEME_TEL,
+                                                     number, null));
+            intent.putExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE,
+                            phoneAccountHandle);
+            PendingIntent pendingIntent =
+                PendingIntent.getActivity(mContext, SIP_TAG, intent,
+                                          PendingIntent.FLAG_IMMUTABLE);
+            Resources res = mContext.getResources();
+            String notificationTitle = mContext
+                .getString(R.string.notification_voicemail_title);
+            notificationTitle += " (" + count + "/" + total + ")";
+            String notificationText = String.format(mContext.getString(R.string.notification_voicemail_sip_format), id);
+            Notification.Builder builder = new Notification.Builder(mContext);
+            builder.setSmallIcon(android.R.drawable.stat_notify_voicemail)
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle(notificationTitle)
+                .setContentText(notificationText)
+                .setContentIntent(pendingIntent)
+                .setColor(res.getColor(R.color.dialer_theme_color))
+                .setChannel(NotificationChannelController.CHANNEL_ID_VOICE_MAIL)
+                .setOnlyAlertOnce(isRefresh);
+            final Notification notification = builder.build();
+
+            Log.i(LOG_TAG, "set MWI Notification for " + id);
+            List<UserHandle> users = getUsersExcludeDying();
+            for (UserHandle userHandle : users) {
+                if (!hasUserRestriction(
+                        UserManager.DISALLOW_OUTGOING_CALLS, userHandle)
+		    && !mUserManager.isManagedProfile(userHandle.getIdentifier())) {
+		    notifyAsUser(id, VOICEMAIL_NOTIFICATION,
+				 notification, userHandle);
+		}
+	    }
+        } else {
+            Log.i(LOG_TAG, "Clear MWI notification for " + id);
+            List<UserHandle> users = getUsersExcludeDying();
+            for (UserHandle userHandle : users) {
+                if (!hasUserRestriction(
+                        UserManager.DISALLOW_OUTGOING_CALLS, userHandle)
+		    && !mUserManager.isManagedProfile(userHandle.getIdentifier())) {
+		    cancelAsUser(id, VOICEMAIL_NOTIFICATION, userHandle);
+		}
+	    }
+        }
     }
 
     /**
