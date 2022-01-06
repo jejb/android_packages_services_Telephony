@@ -16,6 +16,8 @@
 
 package com.android.services.telephony.sip;
 
+import com.android.phone.PhoneGlobals;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -55,7 +57,11 @@ public class SipIncomingCallReceiver extends BroadcastReceiver {
         }
 
         if (action.equals(SipManager.ACTION_SIP_INCOMING_CALL)) {
-            takeCall(context, intent);
+            if (SipManager.isMWI(intent)) {
+                takeMWI(context, intent);
+            } else {
+                takeCall(context, intent);
+            }
         } else {
             if (VERBOSE) log("onReceive, action not processed: " + action);
         }
@@ -81,6 +87,24 @@ public class SipIncomingCallReceiver extends BroadcastReceiver {
                 log("takeCall, PhoneAccount is disabled. Not accepting incoming call...");
             }
         }
+    }
+
+    private void takeMWI(Context context, Intent intent)
+    {
+        if (VERBOSE) log("takeMwi, intent: " + intent);
+        PhoneAccountHandle accountHandle = null;
+        try {
+            accountHandle = intent.getParcelableExtra(SipUtil.EXTRA_PHONE_ACCOUNT);
+        } catch (ClassCastException e) {
+            log("takeCall, Bad account handle detected. Bailing!");
+            return;
+        }
+        if (accountHandle == null)
+            return;
+        PhoneGlobals pg = PhoneGlobals.getInstance();
+        pg.setSipMwi(accountHandle, SipManager.getMWIcount(intent),
+                     SipManager.getMWItotal(intent),
+                     SipManager.getMWIcall(intent));
     }
 
     private boolean isRunningInSystemUser() {
