@@ -18,6 +18,8 @@ package com.android.phone;
 
 import android.annotation.IntDef;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.KeyguardManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -67,6 +69,7 @@ import com.android.internal.telephony.TelephonyComponentFactory;
 import com.android.internal.telephony.TelephonyIntents;
 import com.android.internal.telephony.dataconnection.DataConnectionReasons;
 import com.android.internal.telephony.dataconnection.DataConnectionReasons.DataDisallowedReasonType;
+import com.android.internal.telephony.util.NotificationChannelController;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.phone.settings.SettingsConstants;
 import com.android.phone.vvm.CarrierVvmPackageInstalledReceiver;
@@ -315,6 +318,18 @@ public class PhoneGlobals extends ContextWrapper {
             // Inject telephony component factory if configured using other jars.
             XmlResourceParser parser = getResources().getXml(R.xml.telephony_injection);
             TelephonyComponentFactory.getInstance().injectTheComponentFactory(parser);
+            /*
+             * Cheat here: android has redone voicemail notification
+             * to go through the dialer which requires a SIM
+             * subscription.  SIP channels don't have a SIM
+             * subscription, so can't use this mechanism.  For SIP we
+             * must resurrect the legacy voicemail notification.
+             */
+            NotificationChannel channel = new NotificationChannel(
+                NotificationChannelController.CHANNEL_ID_VOICE_MAIL,
+                "default voicemail",
+                NotificationManager.IMPORTANCE_DEFAULT);
+            getSystemService(NotificationManager.class).createNotificationChannel(channel);
             // Initialize the telephony framework
             PhoneFactory.makeDefaultPhones(this);
 
@@ -858,6 +873,17 @@ public class PhoneGlobals extends ContextWrapper {
      */
     public void refreshMwiIndicator(int subId) {
         notificationMgr.refreshMwi(subId);
+    }
+    /**
+     * Sip doesn't have subscription ids, so trigger an MWI indication
+     * dirrectly to the sip handle.
+     *
+     * @param subId the subscription id we should refresh the notification for.
+     */
+    public void setSipMwi(android.telecom.PhoneAccountHandle phoneAccountHandle,
+                          int count, int total, String number) {
+        Log.i(LOG_TAG, "setSipMwi received");
+        notificationMgr.notifySipMwi(phoneAccountHandle, count, total, number);
     }
 
     /**
