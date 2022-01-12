@@ -198,9 +198,37 @@ public class SipUtil {
      * @param context The context.
      * @return {@code True} if SIP should be used for PSTN calls.
      */
-    private static boolean useSipForPstnCalls(Context context) {
+    public static boolean useSipForPstnCalls(Context context) {
         final SipPreferences sipPreferences = new SipPreferences(context);
         return sipPreferences.getSipCallOption().equals(Settings.System.SIP_ALWAYS);
+    }
+
+    public static void setUserSelectedOutgoingPhoneAccount(Context context, PhoneAccountHandle handle) {
+        SipProfileDb profileDb = new SipProfileDb(context);
+        List<SipProfile> sipProfileList = profileDb.retrieveSipProfileList();
+        SipProfile found = null;
+        // this may not be a sip account, so found may end up null
+        for (SipProfile p : sipProfileList) {
+            if (p.getProfileName().equals(handle.getId())) {
+                found = p;
+            }
+        }
+        // loop over all the sip accounts updating the OutgoingPhoneAccount flag
+        for (SipProfile p : sipProfileList) {
+            updateOutgoingPhoneAccount(p, profileDb, p == found);
+        }
+    }
+
+    private static void updateOutgoingPhoneAccount(SipProfile p,
+        SipProfileDb db, boolean isEnabled) {
+        SipProfile newProfile = new SipProfile.Builder(p).setOutgoingPhoneAccount(isEnabled).build();
+
+        try {
+            db.deleteProfile(p);
+            db.saveProfile(newProfile);
+        } catch (Exception e) {
+            Log.d(LOG_TAG, "updateAutoRegistrationFlag, exception: " + e);
+        }
     }
 
     /**

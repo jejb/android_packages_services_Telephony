@@ -236,6 +236,9 @@ public class PhoneAccountSettingsFragment extends PreferenceFragment
     public boolean onAccountSelected(AccountSelectionPreference pref, PhoneAccountHandle account) {
         if (pref == mDefaultOutgoingAccount) {
             mTelecomManager.setUserSelectedOutgoingPhoneAccount(account);
+            Context context = getActivity();
+            if (context != null)
+                SipUtil.setUserSelectedOutgoingPhoneAccount(context, account);
             return true;
         }
         return false;
