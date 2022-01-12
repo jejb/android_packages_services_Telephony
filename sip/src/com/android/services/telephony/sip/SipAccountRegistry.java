@@ -251,6 +251,9 @@ public final class SipAccountRegistry {
                     telecomManager.enablePhoneAccount(phoneAccount.getAccountHandle(), true);
                 }
                 startSipServiceForProfile(profile, sipManager, context, isReceivingCalls);
+                if (SipUtil.useSipForPstnCalls(context) && profile.getOutgoingPhoneAccount()) {
+                    telecomManager.setUserSelectedOutgoingPhoneAccount(phoneAccount.getAccountHandle());
+                }
             }
         }
     }
