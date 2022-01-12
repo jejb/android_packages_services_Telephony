@@ -240,6 +240,9 @@ public class PhoneAccountSettingsFragment extends PreferenceFragment
         Log.d(LOG_TAG, String.format("onAccountSelected:  pref=[%s], account=[%s]", pref, account));
         if (pref == mDefaultOutgoingAccount) {
             mTelecomManager.setUserSelectedOutgoingPhoneAccount(account);
+            Context context = getActivity();
+            if (context != null)
+                SipUtil.setUserSelectedOutgoingPhoneAccount(context, account);
             return true;
         }
         return false;
