@@ -34,6 +34,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.phone.PhoneGlobals;
+import com.android.phone.R;
 
 import java.io.IOException;
 import java.util.ArrayList;

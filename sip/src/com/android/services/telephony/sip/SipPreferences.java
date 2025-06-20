@@ -23,6 +23,8 @@ import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
 
+import com.android.phone.R;
+
 /**
  * Wrapper for SIP's preferences.
  */
