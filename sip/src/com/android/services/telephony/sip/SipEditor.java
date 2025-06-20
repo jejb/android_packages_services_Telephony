@@ -37,6 +37,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.android.phone.FrameworksUtils;
+import com.android.phone.R;
 
 import java.io.IOException;
 import java.lang.reflect.Method;

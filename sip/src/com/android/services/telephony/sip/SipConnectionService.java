@@ -35,6 +35,8 @@ import android.telecom.TelecomManager;
 import android.telephony.DisconnectCause;
 import android.util.Log;
 
+import com.android.phone.R;
+
 import com.android.internal.telephony.CallStateException;
 import com.android.internal.telephony.PhoneFactory;
 import com.android.internal.telephony.PhoneInternalInterface;
